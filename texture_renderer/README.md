@@ -1,4 +1,4 @@
-# texture_rgba_renderer_example
+# texture_renderer
 
 Play videos by reading frames via opencv_dart and render by texture_rgba_renderer
 
@@ -9,4 +9,4 @@ Original link: https://github.com/Kingtous/flutter_texture_rgba_renderer/tree/ma
 
 ## Screenshots
 
-![](texture_renderer/texture_rgba_renderer.gif)
+![](https://github.com/rainyl/opencv_dart.examples/blob/main/texture_renderer/texture_rgba_renderer.gif)
