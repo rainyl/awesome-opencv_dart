@@ -2,10 +2,10 @@ name: texture_rgba_renderer_example
 description: Demonstrates how to use the texture_rgba_renderer plugin.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -18,7 +18,7 @@ dependencies:
     sdk: flutter
 
   texture_rgba_renderer: ^0.0.16
-  opencv_dart: ^1.0.6+1
+  opencv_dart: ^1.0.7
   file_picker: ^8.0.4
 
   # The following adds the Cupertino Icons font to your application.
@@ -42,7 +42,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

@@ -119,18 +119,16 @@ class _MyAppState extends State<MyApp> {
           }
           final (success, mat) = cap.read();
           if (success) {
-            final pic = cv.cvtColor(mat, cv.COLOR_RGB2RGBA).data;
-            final picAddr = malloc.allocate(pic.length).cast<Uint8>();
-            final list = picAddr.asTypedList(pic.length);
-            list.setRange(0, pic.length, pic);
+            final pic = cv.cvtColor(mat, cv.COLOR_RGB2RGBA);
+            final (picAddr, len) = pic.dataPtr;
             final t1 = DateTime.now().microsecondsSinceEpoch;
             final texture = Pointer.fromAddress(texturePtr).cast<Void>();
-            Native.instance.onRgba(texture, picAddr, pic.length, mat.width, mat.height, strideAlign);
+            Native.instance.onRgba(texture, picAddr, len, mat.width, mat.height, strideAlign);
             final t2 = DateTime.now().microsecondsSinceEpoch;
             setState(() {
               time = t2 - t1;
             });
-            malloc.free(picAddr);
+            pic.dispose();
             currentFrame += 1;
           } else {
             debugPrint("Read failed");
