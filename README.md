@@ -10,7 +10,7 @@ Share your examples by creating a pull request.
 
 ## List
 
-- [texture_renderer]([texture_renderer](https://github.com/rainyl/awesome-opencv_dart/tree/main/examples/texture_renderer)), play videos using opencv_dart and texture_rgba_renderer
+- [texture_renderer](https://github.com/rainyl/awesome-opencv_dart/tree/main/examples/texture_renderer), play videos using opencv_dart and texture_rgba_renderer
 - [face_grouping](https://github.com/abdelaziz-mahdy/face_grouping) by [@abdelaziz-mahdy](https://github.com/abdelaziz-mahdy), face detection and grouping using opencv_dart, also shows how to implement async using Isolates
 
 ## Acknowledgement
