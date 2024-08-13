@@ -9,4 +9,4 @@ Original link: https://github.com/Kingtous/flutter_texture_rgba_renderer/tree/ma
 
 ## Screenshots
 
-![](https://github.com/rainyl/opencv_dart.examples/blob/main/texture_renderer/texture_rgba_renderer.gif)
+![](https://github.com/rainyl/awesome-opencv_dart/blob/30fa0f501cea4a8a77d7c2f0e30c2b0c64b7dbec/examples/texture_renderer/texture_rgba_renderer.gif)
