@@ -120,7 +120,8 @@ class _MyAppState extends State<MyApp> {
           final (success, mat) = cap.read();
           if (success) {
             final pic = cv.cvtColor(mat, cv.COLOR_RGB2RGBA);
-            final (picAddr, len) = pic.dataPtr;
+            final picAddr = pic.dataPtr;
+            final len = pic.total * pic.elemSize;
             final t1 = DateTime.now().microsecondsSinceEpoch;
             final texture = Pointer.fromAddress(texturePtr).cast<Void>();
             Native.instance.onRgba(texture, picAddr, len, mat.width, mat.height, strideAlign);
