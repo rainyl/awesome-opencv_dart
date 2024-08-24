@@ -101,10 +101,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     final file = result.files.single;
                     final path = file.path;
                     if (path != null) {
+                      debugPrint("selected file: $path");
                       await vc.openAsync(path);
                       setState(() {
                         src = path;
-                        dst = p.join(p.dirname(path), "output.avi");
+                        dst = p.join("/data/user/0/com.example.videoio/cache", "output.avi");
                         width = vc.get(cv.CAP_PROP_FRAME_WIDTH).toInt();
                         height = vc.get(cv.CAP_PROP_FRAME_HEIGHT).toInt();
                         fps = vc.get(cv.CAP_PROP_FPS);
@@ -119,10 +120,10 @@ class _MyHomePageState extends State<MyHomePage> {
             Text("dst: $dst"),
             ElevatedButton(
                 onPressed: () async {
-                  final result = await FilePicker.platform.getDirectoryPath();
+                  final result = await FilePicker.platform.saveFile(fileName: "output.avi", bytes: Uint8List(0));
                   if (result != null) {
                     setState(() {
-                      dst = p.join(result, "output.avi");
+                      dst = result;
                     });
                   }
                 },
