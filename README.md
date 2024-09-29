@@ -14,6 +14,7 @@ Share your examples by creating a pull request.
 - [face_grouping](https://github.com/abdelaziz-mahdy/face_grouping) by [@abdelaziz-mahdy](https://github.com/abdelaziz-mahdy), face detection and grouping using opencv_dart, also shows how to implement async using Isolates
 - [stitching](https://github.com/rainyl/awesome-opencv_dart/tree/main/examples/stitching), Image stitching
 - [videoio](https://github.com/rainyl/awesome-opencv_dart/tree/main/examples/videoio), video read and write demo
+- [flutter_toon_it](https://github.com/abdelaziz-mahdy/flutter_toon_it) by [@abdelaziz-mahdy](https://github.com/abdelaziz-mahdy), transforms regular images into cartoonized versions using OpenCV.
 
 ## Acknowledgement
 
