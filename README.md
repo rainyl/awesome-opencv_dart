@@ -15,6 +15,7 @@ Share your examples by creating a pull request.
 - [stitching](https://github.com/rainyl/awesome-opencv_dart/tree/main/examples/stitching), Image stitching
 - [videoio](https://github.com/rainyl/awesome-opencv_dart/tree/main/examples/videoio), video read and write demo
 - [flutter_toon_it](https://github.com/abdelaziz-mahdy/flutter_toon_it) by [@abdelaziz-mahdy](https://github.com/abdelaziz-mahdy), transforms regular images into cartoonized versions using OpenCV.
+- [dnn_mnist](https://github.com/rainyl/awesome-opencv_dart/tree/main/examples/dnn_mnist), MNIST demo using OpenCV DNN
 
 ## Acknowledgement
 
