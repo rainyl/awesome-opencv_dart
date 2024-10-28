@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:extended_text/extended_text.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:opencv_dart/opencv_dart.dart' as cv;
 import 'package:path/path.dart' as p;
@@ -94,78 +96,101 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            ElevatedButton(
-                onPressed: () async {
-                  FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.video);
-                  if (result != null) {
-                    final file = result.files.single;
-                    final path = file.path;
-                    if (path != null) {
-                      debugPrint("selected file: $path");
-                      await vc.openAsync(path);
-                      setState(() {
-                        src = path;
-                        dst = p.join("/data/user/0/com.example.videoio/cache", "output.avi");
-                        width = vc.get(cv.CAP_PROP_FRAME_WIDTH).toInt();
-                        height = vc.get(cv.CAP_PROP_FRAME_HEIGHT).toInt();
-                        fps = vc.get(cv.CAP_PROP_FPS);
-                        backend = vc.getBackendName();
-                      });
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.video);
+
+                    if (result != null) {
+                      final file = result.files.single;
+                      final path = file.path;
+                      if (path != null) {
+                        debugPrint("selected file: $path");
+                        await vc.openAsync(path);
+                        setState(() {
+                          src = path;
+                          dst = p.join(p.dirname(path), "output.mp4");
+                          width = vc.get(cv.CAP_PROP_FRAME_WIDTH).toInt();
+                          height = vc.get(cv.CAP_PROP_FRAME_HEIGHT).toInt();
+                          fps = vc.get(cv.CAP_PROP_FPS);
+                          backend = vc.getBackendName();
+                        });
+                      }
+
+                      final downloads = await getDownloadsDirectory();
+                      debugPrint("downloads: $downloads");
+                      if (downloads != null) {
+                        setState(() {
+                          dst = p.join(downloads.path, "output.mp4");
+                        });
+                      }
                     }
-                  }
-                },
-                child: const Text("Select a video")),
+                  },
+                  child: const Text("Select a video"),
+                )
+              ],
+            ),
             Text("width: $width, height: $height, fps: $fps, backend: $backend"),
-            Text("src: $src"),
-            Text("dst: $dst"),
+            ExtendedText(
+              "src: $src",
+              maxLines: 1,
+              overflowWidget: const TextOverflowWidget(
+                position: TextOverflowPosition.middle,
+                child: Text("..."),
+              ),
+            ),
+            ExtendedText(
+              "dst: $dst",
+              maxLines: 1,
+              overflowWidget: const TextOverflowWidget(
+                position: TextOverflowPosition.middle,
+                child: Text("..."),
+              ),
+            ),
             ElevatedButton(
-                onPressed: () async {
-                  final result = await FilePicker.platform.saveFile(fileName: "output.avi", bytes: Uint8List(0));
-                  if (result != null) {
+              child: const Text("Start"),
+              onPressed: () async {
+                debugPrint("dst: $dst");
+                // we will write the first frame to the `dst` file and read it back
+                vw.open(dst!, "MJPG", fps, (width, height));
+                assert(vw.isOpened);
+                final (success, frame) = await vc.readAsync();
+                if (success) {
+                  await vw.writeAsync(frame);
+                } else {
+                  debugPrint("failed to read frame");
+                }
+                vw.release();
+
+                // read it back
+                final vc1 = cv.VideoCapture.fromFile(dst!);
+                final (s, f) = await vc1.readAsync();
+                vc1.dispose();
+
+                if (s) {
+                  final (s1, bytes) = await cv.imencodeAsync(".png", f);
+                  f.dispose();
+
+                  if (s1) {
                     setState(() {
-                      dst = result;
+                      _wroteFrame = bytes;
                     });
-                  }
-                },
-                child: const Text("Save to")),
-            ElevatedButton(
-                onPressed: () async {
-                  // we will write the first frame to the `dst` file and read it back
-                  vw.open(dst!, "MJPG", fps, (width, height));
-                  assert(vw.isOpened);
-                  final (success, frame) = await vc.readAsync();
-                  if (success) {
-                    await vw.writeAsync(frame);
                   } else {
-                    debugPrint("failed to read frame");
+                    debugPrint("encode failed");
                   }
-                  vw.release();
-
-                  // read it back
-                  final vc1 = cv.VideoCapture.fromFile(dst!);
-                  final (s, f) = await vc1.readAsync();
-                  vc1.dispose();
-
-                  if (s) {
-                    final rgb = cv.cvtColor(f, cv.COLOR_BGR2RGB);
-                    final (s1, bytes) = await cv.imencodeAsync(".png", rgb);
-
-                    f.dispose();
-                    rgb.dispose();
-
-                    if (s1) {
-                      setState(() {
-                        _wroteFrame = bytes;
-                      });
-                    } else {
-                      debugPrint("encode failed");
-                    }
-                  } else {
-                    debugPrint("failed to read frame from $dst");
-                  }
-                },
-                child: const Text("Start")),
-            _wroteFrame == null ? Placeholder() : Image.memory(_wroteFrame!),
+                } else {
+                  debugPrint("failed to read frame from $dst");
+                }
+              },
+            ),
+            _wroteFrame == null
+                ? const Placeholder()
+                : Image.memory(
+                    _wroteFrame!,
+                    width: 300,
+                  ),
           ],
         ),
       ),
