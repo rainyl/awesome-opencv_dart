@@ -46,7 +46,8 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    if (videoPath != null) initCapture();
+    // if (videoPath != null) 
+    initCapture();
     _textureRgbaRendererPlugin.createTexture(key).then((textureId) {
       if (textureId != -1) {
         debugPrint("Texture register success, textureId=$textureId");
@@ -66,15 +67,16 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initCapture() {
-    if (videoPath == null) {
-      debugPrint("videoPath is null");
-      return;
-    }
-    if (!File(videoPath!).existsSync()) {
-      debugPrint("video not exists: $videoPath");
-      return;
-    }
-    cap = cv.VideoCapture.fromFile(videoPath!);
+    // if (videoPath == null) {
+    //   debugPrint("videoPath is null");
+    //   return;
+    // }
+    // if (!File(videoPath!).existsSync()) {
+    //   debugPrint("video not exists: $videoPath");
+    //   return;
+    // }
+    // cap = cv.VideoCapture.fromFile(videoPath!);
+    cap = cv.VideoCapture.fromDevice(0);
     frameCount = cap.get(cv.CAP_PROP_FRAME_COUNT).toInt();
     debugPrint("Frame count: $frameCount");
   }
