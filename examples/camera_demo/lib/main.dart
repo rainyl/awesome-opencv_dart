@@ -13,6 +13,7 @@ import 'package:camera_demo/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:opencv_core/opencv.dart' as cv;
 
 /// Camera example home widget.
@@ -51,6 +52,13 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   CameraController? controller;
   bool enableAudio = true;
+
+  final _orientations = {
+    DeviceOrientation.portraitUp: 0,
+    DeviceOrientation.landscapeLeft: 90,
+    DeviceOrientation.portraitDown: 180,
+    DeviceOrientation.landscapeRight: 270,
+  };
 
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
@@ -233,7 +241,25 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       return;
     }
 
-    // await cv.rotateAsync(mat, cv.ROTATE_90_CLOCKWISE, dst: mat);
+    final sensorOrientation = controller?.description.sensorOrientation;
+    var rotationCompensation = _orientations[controller?.value.deviceOrientation];
+    if (rotationCompensation == null || sensorOrientation == null) return;
+    if (controller?.description.lensDirection == CameraLensDirection.front) {
+      // front-facing
+      rotationCompensation = (sensorOrientation + rotationCompensation) % 360;
+    } else {
+      // back-facing
+      rotationCompensation = (sensorOrientation - rotationCompensation + 360) % 360;
+    }
+    switch (rotationCompensation) {
+      case 90:
+        await cv.rotateAsync(mat, cv.ROTATE_90_CLOCKWISE, dst: mat);
+      case 180:
+        await cv.rotateAsync(mat, cv.ROTATE_180, dst: mat);
+      case 270:
+        await cv.rotateAsync(mat, cv.ROTATE_90_COUNTERCLOCKWISE, dst: mat);
+      default:
+    }
     await cv.gaussianBlurAsync(mat, (15, 15), 5, dst: mat);
     final uiImage = await mat.toUiImage();
 
