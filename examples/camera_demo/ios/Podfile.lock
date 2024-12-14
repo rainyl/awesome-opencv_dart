@@ -1,0 +1,71 @@
+PODS:
+  - camera_avfoundation (0.0.1):
+    - Flutter
+  - DartCvIOS (4.10.0.5):
+    - DartCvIOS/calib3d (= 4.10.0.5)
+    - DartCvIOS/contrib (= 4.10.0.5)
+    - DartCvIOS/core (= 4.10.0.5)
+    - DartCvIOS/features2d (= 4.10.0.5)
+    - DartCvIOS/imgproc (= 4.10.0.5)
+    - DartCvIOS/objdetect (= 4.10.0.5)
+    - DartCvIOS/photo (= 4.10.0.5)
+    - DartCvIOS/stitching (= 4.10.0.5)
+    - DartCvIOS/video (= 4.10.0.5)
+  - DartCvIOS/calib3d (4.10.0.5):
+    - DartCvIOS/core
+  - DartCvIOS/contrib (4.10.0.5):
+    - DartCvIOS/core
+  - DartCvIOS/core (4.10.0.5)
+  - DartCvIOS/dnn (4.10.0.5):
+    - DartCvIOS/core
+  - DartCvIOS/features2d (4.10.0.5):
+    - DartCvIOS/core
+  - DartCvIOS/imgproc (4.10.0.5):
+    - DartCvIOS/core
+  - DartCvIOS/objdetect (4.10.0.5):
+    - DartCvIOS/core
+  - DartCvIOS/photo (4.10.0.5):
+    - DartCvIOS/core
+  - DartCvIOS/stitching (4.10.0.5):
+    - DartCvIOS/core
+  - DartCvIOS/video (4.10.0.5):
+    - DartCvIOS/core
+  - Flutter (1.0.0)
+  - opencv_core (0.0.1):
+    - DartCvIOS (= 4.10.0.5)
+    - DartCvIOS/dnn (= 4.10.0.5)
+    - Flutter
+  - video_player_avfoundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
+  - Flutter (from `Flutter`)
+  - opencv_core (from `.symlinks/plugins/opencv_core/ios`)
+  - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
+
+SPEC REPOS:
+  trunk:
+    - DartCvIOS
+
+EXTERNAL SOURCES:
+  camera_avfoundation:
+    :path: ".symlinks/plugins/camera_avfoundation/ios"
+  Flutter:
+    :path: Flutter
+  opencv_core:
+    :path: ".symlinks/plugins/opencv_core/ios"
+  video_player_avfoundation:
+    :path: ".symlinks/plugins/video_player_avfoundation/darwin"
+
+SPEC CHECKSUMS:
+  camera_avfoundation: dd002b0330f4981e1bbcb46ae9b62829237459a4
+  DartCvIOS: 8b1a5ef6cae756d046a22269d12bde7ccd8829c2
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  opencv_core: aea52cd232e2d6d136d0628e45050196100d1a1c
+  video_player_avfoundation: 7c6c11d8470e1675df7397027218274b6d2360b3
+
+PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
+
+COCOAPODS: 1.16.2

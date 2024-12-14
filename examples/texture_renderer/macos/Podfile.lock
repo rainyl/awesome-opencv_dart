@@ -1,22 +1,67 @@
 PODS:
+  - DartCvMacOS (4.10.0.5):
+    - DartCvMacOS/calib3d (= 4.10.0.5)
+    - DartCvMacOS/contrib (= 4.10.0.5)
+    - DartCvMacOS/core (= 4.10.0.5)
+    - DartCvMacOS/features2d (= 4.10.0.5)
+    - DartCvMacOS/imgproc (= 4.10.0.5)
+    - DartCvMacOS/objdetect (= 4.10.0.5)
+    - DartCvMacOS/photo (= 4.10.0.5)
+    - DartCvMacOS/stitching (= 4.10.0.5)
+    - DartCvMacOS/video (= 4.10.0.5)
+  - DartCvMacOS/calib3d (4.10.0.5):
+    - DartCvMacOS/core
+  - DartCvMacOS/contrib (4.10.0.5):
+    - DartCvMacOS/core
+  - DartCvMacOS/core (4.10.0.5)
+  - DartCvMacOS/dnn (4.10.0.5):
+    - DartCvMacOS/core
+  - DartCvMacOS/features2d (4.10.0.5):
+    - DartCvMacOS/core
+  - DartCvMacOS/imgproc (4.10.0.5):
+    - DartCvMacOS/core
+  - DartCvMacOS/objdetect (4.10.0.5):
+    - DartCvMacOS/core
+  - DartCvMacOS/photo (4.10.0.5):
+    - DartCvMacOS/core
+  - DartCvMacOS/stitching (4.10.0.5):
+    - DartCvMacOS/core
+  - DartCvMacOS/video (4.10.0.5):
+    - DartCvMacOS/core
+  - DartCvMacOS/videoio (4.10.0.5):
+    - DartCvMacOS/core
   - FlutterMacOS (1.0.0)
+  - opencv_dart (0.0.1):
+    - DartCvMacOS (= 4.10.0.5)
+    - DartCvMacOS/dnn (= 4.10.0.5)
+    - DartCvMacOS/videoio (= 4.10.0.5)
+    - FlutterMacOS
   - texture_rgba_renderer (0.0.1):
     - FlutterMacOS
 
 DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral`)
+  - opencv_dart (from `Flutter/ephemeral/.symlinks/plugins/opencv_dart/macos`)
   - texture_rgba_renderer (from `Flutter/ephemeral/.symlinks/plugins/texture_rgba_renderer/macos`)
+
+SPEC REPOS:
+  trunk:
+    - DartCvMacOS
 
 EXTERNAL SOURCES:
   FlutterMacOS:
     :path: Flutter/ephemeral
+  opencv_dart:
+    :path: Flutter/ephemeral/.symlinks/plugins/opencv_dart/macos
   texture_rgba_renderer:
     :path: Flutter/ephemeral/.symlinks/plugins/texture_rgba_renderer/macos
 
 SPEC CHECKSUMS:
+  DartCvMacOS: 309045657c896a5801813a38e465c15a314ccc46
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  opencv_dart: e166298ee38a4cdfc7b7e3eb731a4d5b62be794d
   texture_rgba_renderer: cbed959a3c127122194a364e14b8577bd62dc8f2
 
-PODFILE CHECKSUM: 353c8bcc5d5b0994e508d035b5431cfe18c1dea7
+PODFILE CHECKSUM: 0d3963a09fc94f580682bd88480486da345dc3f0
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.16.2
