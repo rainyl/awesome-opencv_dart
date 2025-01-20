@@ -41,6 +41,9 @@ dependencies:
   extended_text: ^14.1.0
   path_provider: ^2.1.4
 
+dependency_overrides:
+  dartcv4: 1.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
