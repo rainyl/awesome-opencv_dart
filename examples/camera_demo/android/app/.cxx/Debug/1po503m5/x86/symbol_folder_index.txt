@@ -1,0 +1,1 @@
+/Users/rainy/DEV/awesome-opencv_dart/examples/camera_demo/build/app/intermediates/cxx/Debug/1po503m5/obj/x86
