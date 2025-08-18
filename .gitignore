@@ -5,12 +5,12 @@
 .packages
 .vscode/
 build/
-examples/camera_demo
 
 .DS_Store
 
 # If you're building an application, you may want to check-in your pubspec.lock
 pubspec.lock
+.DS_Store
 
 # Directory created by dartdoc
 # If you don't generate documentation locally you can remove this line.
@@ -30,3 +30,6 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# FVM Version Cache
+.fvm/
