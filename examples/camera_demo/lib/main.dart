@@ -4,10 +4,10 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
-import 'package:camera_demo/custompainter.dart';
 import 'package:camera_demo/input_image.dart';
 import 'package:camera_demo/utils.dart';
 import 'package:flutter/foundation.dart';
@@ -130,7 +130,14 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                 ),
               ),
               Expanded(
-                child: _opencvPreviewWidget(),
+                child: _previewContainer(
+                    child: _opencvPreviewImage == null
+                        ? const Text("waiting...")
+                        : RawImage(
+                            image: _opencvPreviewImage,
+                            fit: BoxFit.cover,
+                            filterQuality: FilterQuality.low,
+                          )),
               ),
             ],
           ),
@@ -195,12 +202,44 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     await controller!.setZoomLevel(_currentScale);
   }
 
-  Widget _opencvPreviewWidget() {
-    return CustomPaint(
-      painter: ProcessedCameraViewPainter(image: _opencvPreviewImage),
-      size: ui.Size.fromHeight(300),
-      willChange: true,
-      isComplex: true,
+  Future<ui.Image> _rgbaBytesToImage(
+    Uint8List data,
+    int w,
+    int h,
+  ) async {
+    // Always feed RGBA to avoid bgra8888 issues on Chrome.
+    final immutable = await ui.ImmutableBuffer.fromUint8List(data);
+    ui.ImageDescriptor desc = ui.ImageDescriptor.raw(
+      immutable,
+      width: w,
+      height: h,
+      pixelFormat: ui.PixelFormat.rgba8888,
+    );
+    final codec = await desc.instantiateCodec();
+    final frame = await codec.getNextFrame();
+    return frame.image;
+  }
+
+  Future<ui.Image> _cvMatToImage(cv.Mat mat, {(int, int)? dstSize}) async {
+    final resized = dstSize == null ? mat : await cv.resizeAsync(mat, dstSize);
+    final rgba = await cv.cvtColorAsync(resized, cv.COLOR_BGR2RGBA);
+    resized.dispose();
+    final image = await _rgbaBytesToImage(rgba.data, rgba.width, rgba.height);
+    rgba.dispose();
+    return image;
+  }
+
+  Widget _previewContainer({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(5),
+      margin: const EdgeInsets.all(5),
+      child: AspectRatio(
+        aspectRatio: 9 / 16,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: ColoredBox(color: Colors.black, child: child),
+        ),
+      ),
     );
   }
 
@@ -212,34 +251,19 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     final format = InputImageFormatValue.fromRawValue(image.format.raw);
     if (format == null) return;
 
-    Uint8List bytes;
-    if (Platform.isAndroid && format == InputImageFormat.yuv_420_888) {
-      bytes = convertYUV420ToNV21(image);
-    } else {
-      if (image.planes.length != 1) return;
-      bytes = image.planes.first.bytes;
-    }
+    final bytes = switch (format) {
+      InputImageFormat.yuv_420_888 => yuv420ToRGBA8888(image),
+      InputImageFormat.nv21 => nv21ToRGBA8888(image),
+      InputImageFormat.bgra8888 => bgraToRgbaInPlace(image.planes.first.bytes),
+      _ => throw UnimplementedError(),
+    };
 
-    cv.Mat mat;
-    if (Platform.isAndroid) {
-      mat = cv.Mat.fromList(
-        (image.height * 1.5).toInt(),
-        image.width,
-        cv.MatType.CV_8UC1,
-        bytes,
-      );
-      await cv.cvtColorAsync(mat, cv.COLOR_YUV2BGRA_NV21, dst: mat);
-    } else if (Platform.isIOS && format == InputImageFormat.bgra8888) {
-      mat = cv.Mat.fromList(
-        image.height,
-        image.width,
-        cv.MatType.CV_8UC4,
-        bytes,
-      );
-    } else {
-      debugPrint('Unknown camera format: $format');
-      return;
-    }
+    cv.Mat mat = cv.Mat.fromList(
+      image.height,
+      image.width,
+      cv.MatType.CV_8UC4,
+      bytes,
+    );
 
     final sensorOrientation = controller?.description.sensorOrientation;
     var rotationCompensation = _orientations[controller?.value.deviceOrientation];
@@ -260,14 +284,41 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         await cv.rotateAsync(mat, cv.ROTATE_90_COUNTERCLOCKWISE, dst: mat);
       default:
     }
-    await cv.gaussianBlurAsync(mat, (15, 15), 5, dst: mat);
+
+    // downsampling
+    await cv.resizeAsync(mat, (mat.width ~/ 2, mat.height ~/ 2), dst: mat);
+
+    // simulate object detection drawing
+    final x = Random().nextInt(50);
+    final y = Random().nextInt(50);
+    await cv.rectangleAsync(
+      mat,
+      cv.Rect(
+        x,
+        y,
+        Random().nextInt(mat.width),
+        Random().nextInt(mat.height),
+      ),
+      cv.Scalar.red,
+      thickness: 3,
+    );
+    await cv.putTextAsync(
+      mat,
+      'Hello World',
+      cv.Point(x, y),
+      cv.FONT_HERSHEY_SIMPLEX,
+      1,
+      cv.Scalar.blue,
+      thickness: 3,
+    );
+
+    // convert to ui.Image
     final uiImage = await mat.toUiImage();
+    mat.dispose();
 
     setState(() {
       _opencvPreviewImage = uiImage;
     });
-
-    mat.dispose();
   }
 
   /// Display a row of toggle to select the camera (or a message if no camera is available).
@@ -337,7 +388,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   Future<void> onNewCameraSelected(CameraDescription cameraDescription) async {
     if (controller != null) {
-      return controller!.setDescription(cameraDescription);
+      await controller!.stopImageStream();
+      await controller!.setDescription(cameraDescription);
+      await controller!.startImageStream(_processImage);
     } else {
       return _initializeCameraController(cameraDescription);
     }
