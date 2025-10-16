@@ -39,15 +39,15 @@ class _MyAppState extends State<MyApp> {
   final strideAlign = Platform.isMacOS ? 64 : 1;
 
   String? videoPath;
-  late cv.VideoCapture cap;
+  cv.VideoCapture? cap;
   int currentFrame = 0;
   int frameCount = 0;
 
   @override
   void initState() {
     super.initState();
-    // if (videoPath != null) 
-    initCapture();
+    // if (videoPath != null)
+    // initCapture();
     _textureRgbaRendererPlugin.createTexture(key).then((textureId) {
       if (textureId != -1) {
         debugPrint("Texture register success, textureId=$textureId");
@@ -67,18 +67,23 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initCapture() {
-    // if (videoPath == null) {
-    //   debugPrint("videoPath is null");
-    //   return;
-    // }
-    // if (!File(videoPath!).existsSync()) {
-    //   debugPrint("video not exists: $videoPath");
-    //   return;
-    // }
-    // cap = cv.VideoCapture.fromFile(videoPath!);
-    cap = cv.VideoCapture.fromDevice(0);
-    frameCount = cap.get(cv.CAP_PROP_FRAME_COUNT).toInt();
-    debugPrint("Frame count: $frameCount");
+    if (videoPath == null) {
+      debugPrint("videoPath is null");
+      return;
+    }
+    if (!File(videoPath!).existsSync()) {
+      debugPrint("video not exists: $videoPath");
+      return;
+    }
+    cap?.release();
+    cap = cv.VideoCapture.fromFile(videoPath!);
+    if (cap?.isOpened ?? false) {
+      frameCount = cap!.get(cv.CAP_PROP_FRAME_COUNT).toInt();
+      currentFrame = 0;
+      debugPrint("Frame count: $frameCount");
+    } else {
+      debugPrint("Failed to open video file: $videoPath");
+    }
   }
 
   void start(int methodId) {
@@ -89,12 +94,14 @@ class _MyAppState extends State<MyApp> {
     debugPrint('REMOVE ME =============================== rowBytes $rowBytes');
     _timer?.cancel();
     // 60 fps
-    _timer = Timer.periodic(const Duration(milliseconds: 1000 ~/ 60), (timer) async {
+    _timer =
+        Timer.periodic(const Duration(milliseconds: 1000 ~/ 60), (timer) async {
       if (methodId == 0) {
         // Method.1: with MethodChannel
         data = mockPicture(width, height, rowBytes, picDataLength);
         final t1 = DateTime.now().microsecondsSinceEpoch;
-        final res = await _textureRgbaRendererPlugin.onRgba(key, data!, height, width, strideAlign);
+        final res = await _textureRgbaRendererPlugin.onRgba(
+            key, data!, height, width, strideAlign);
         final t2 = DateTime.now().microsecondsSinceEpoch;
         setState(() {
           time = t2 - t1;
@@ -106,38 +113,72 @@ class _MyAppState extends State<MyApp> {
         final dataPtr = mockPicturePtr(width, height, rowBytes, picDataLength);
         // Method.2: with native ffi
         final t1 = DateTime.now().microsecondsSinceEpoch;
-        Native.instance.onRgba(
-            Pointer.fromAddress(texturePtr).cast<Void>(), dataPtr, picDataLength, width, height, strideAlign);
+        Native.instance.onRgba(Pointer.fromAddress(texturePtr).cast<Void>(),
+            dataPtr, picDataLength, width, height, strideAlign);
         final t2 = DateTime.now().microsecondsSinceEpoch;
         setState(() {
           time = t2 - t1;
         });
         malloc.free(dataPtr);
       } else if (methodId == 2) {
-        if (cap.isOpened) {
+        if (cap?.isOpened ?? false) {
           if (currentFrame >= frameCount) {
-            cap.set(cv.CAP_PROP_POS_FRAMES, 0);
+            cap!.set(cv.CAP_PROP_POS_FRAMES, 0);
             currentFrame = 0;
           }
-          final (success, mat) = cap.read();
+          final (success, mat) = cap!.read();
           if (success) {
             final pic = cv.cvtColor(mat, cv.COLOR_RGB2RGBA);
-            final picAddr = pic.dataPtr;
-            final len = pic.total * pic.elemSize;
+
+            final sourceRowBytes = mat.width * 4;
+            final destRowBytes =
+                (sourceRowBytes + strideAlign - 1) & (~(strideAlign - 1));
+
+            Pointer<Uint8> dataPtr;
+            int dataLength;
+
+            if (sourceRowBytes == destRowBytes) {
+              dataPtr = pic.dataPtr;
+              dataLength = pic.total * pic.elemSize;
+            } else {
+              dataLength = destRowBytes * mat.height;
+              dataPtr = malloc.allocate<Uint8>(dataLength);
+
+              final srcPtr = pic.dataPtr;
+              final destList = dataPtr.asTypedList(dataLength);
+              final srcList = srcPtr.asTypedList(sourceRowBytes * mat.height);
+
+              for (int i = 0; i < mat.height; i++) {
+                final srcOffset = i * sourceRowBytes;
+                final destOffset = i * destRowBytes;
+                final srcRowView = Uint8List.sublistView(
+                    srcList, srcOffset, srcOffset + sourceRowBytes);
+                destList.setRange(
+                    destOffset, destOffset + sourceRowBytes, srcRowView);
+              }
+            }
+
             final t1 = DateTime.now().microsecondsSinceEpoch;
             final texture = Pointer.fromAddress(texturePtr).cast<Void>();
-            Native.instance.onRgba(texture, picAddr, len, mat.width, mat.height, strideAlign);
+            Native.instance.onRgba(texture, dataPtr, dataLength, mat.width,
+                mat.height, strideAlign);
             final t2 = DateTime.now().microsecondsSinceEpoch;
+
+            if (sourceRowBytes != destRowBytes) {
+              malloc.free(dataPtr);
+            }
+
             setState(() {
               time = t2 - t1;
             });
             pic.dispose();
+            mat.dispose();
             currentFrame += 1;
           } else {
             debugPrint("Read failed");
           }
         } else {
-          throw Exception("");
+          debugPrint("Video not loaded. Please pick a video file first.");
         }
       } else {
         throw UnimplementedError("");
@@ -151,8 +192,8 @@ class _MyAppState extends State<MyApp> {
     if (key != -1) {
       _textureRgbaRendererPlugin.closeTexture(key);
     }
-    if (cap.isOpened) {
-      cap.release();
+    if (cap?.isOpened ?? false) {
+      cap!.release();
     }
     super.dispose();
   }
@@ -190,7 +231,8 @@ class _MyAppState extends State<MyApp> {
     return Uint8List.fromList(pic);
   }
 
-  Pointer<Uint8> mockPicturePtr(int width, int height, int rowBytes, int length) {
+  Pointer<Uint8> mockPicturePtr(
+      int width, int height, int rowBytes, int length) {
     final pic = List.generate(length, (index) {
       final r = index / rowBytes;
       final c = (index % rowBytes) / 4;
@@ -234,7 +276,8 @@ class _MyAppState extends State<MyApp> {
                           child: Texture(textureId: textureId)),
                     ),
             ),
-            Text("texture id: $textureId, texture memory address: ${texturePtr.toRadixString(16)}"),
+            Text(
+                "texture id: $textureId, texture memory address: ${texturePtr.toRadixString(16)}"),
             TextButton.icon(
               label: const Text("play with texture (method channel API)"),
               icon: const Icon(Icons.play_arrow),
@@ -251,7 +294,8 @@ class _MyAppState extends State<MyApp> {
               children: [
                 TextButton.icon(
                   onPressed: () async {
-                    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.video);
+                    FilePickerResult? result = await FilePicker.platform
+                        .pickFiles(type: FileType.video);
                     if (result != null) {
                       final file = result.files.single;
                       final path = file.path;
@@ -280,7 +324,8 @@ class _MyAppState extends State<MyApp> {
               icon: const Icon(Icons.play_arrow),
               onPressed: () => start(2),
             ),
-            Text("Current mode: ${method == 0 ? 'Method Channel API' : 'Native API'}"),
+            Text(
+                "Current mode: ${method == 0 ? 'Method Channel API' : 'Native API'}"),
             time != 0 ? Text("FPS: ${1000000 ~/ time} fps") : const Offstage()
           ],
         ),
