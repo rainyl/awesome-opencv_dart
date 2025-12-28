@@ -16,8 +16,8 @@ A Flutter application that uses AI-powered face detection to identify and extrac
 ## Screenshots
 
 <p align="center">
+  <img src="screenshots/1.jpg" width="250" />
   <img src="screenshots/2.jpg" width="250" />
-  <img src="screenshots/3.jpg" width="250" />
 </p>
 
 ## 🛠️ Tech Stack
