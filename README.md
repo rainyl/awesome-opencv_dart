@@ -18,6 +18,7 @@ Share your examples by creating a pull request.
 - [dnn_mnist](https://github.com/rainyl/awesome-opencv_dart/tree/main/examples/dnn_mnist), MNIST demo using OpenCV DNN
 - [camera_demo](https://github.com/rainyl/awesome-opencv_dart/tree/main/examples/camera_demo), Proocessing camera frames using opencv
 - [where_is_my_face](https://github.com/rainyl/awesome-opencv_dart/tree/main/examples/where_is_my_face), Combining Opencv DNN with Flutter camera plugin to detect faces in real-time by using the Yunet face detection model.
+- [optical flow](https://github.com/rainyl/awesome-opencv_dart/tree/main/examples/optical_flow), Optical flow demo using `calcOpticalFlowPyrLK` and `VideoCapture`
 
 ## Acknowledgement
 
